@@ -3,6 +3,7 @@ package pro.shpin.kirill.nin.model;
 import pro.shpin.kirill.nin.view.Window;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -16,12 +17,14 @@ public class Game {
 	public static final int ENTITY_WIDTH_HALF = ENTITY_WIDTH/2;
 	public static final int ENTITY_HEIGHT_HALF = ENTITY_HEIGHT/2;
 
+	public static final int PROJECTILE_DIMENSION = 10;
+
 	private Player player;
 
 	private List<SectionPrototype> presets;
 	private List<Section> sections;
 
-	public static List<Projectile> projectiles;
+	public List<Projectile> projectiles;
 
 	private int width;
 	private int height;
@@ -29,7 +32,7 @@ public class Game {
 	public static final int PIXELS_PER_SECTION = 400;
 
 	private float gravityAccel;
-	public static float timeScale;
+	public float timeScale;
 
 	private static final float NORMAL_TIME_SCALE = 30f;
 	private static final float SLOWED_TIME_SCALE = NORMAL_TIME_SCALE/5f;
@@ -42,8 +45,10 @@ public class Game {
 
 	public boolean leftButtonPressed = false;
 	private boolean rightButtonPressed = false;
-
 	private boolean lastUpdateLeftButtonState = false;
+
+	private boolean spacePressed = false;
+	private boolean lastUpdateSpaceState = false;
 
 	private Random rng;
 
@@ -94,7 +99,7 @@ public class Game {
 		presets.add(new SectionPrototype(new float[] {
 				2,
 				200f, 200f, 40f, 70f, SectionPrototype.NO_ENEMY,
-				528f, 263f, 120f, 80f, SectionPrototype.SWORD_ENEMY
+				528f, 263f, 120f, 80f, SectionPrototype.ARCHER_ENEMY
 		}));
 
 		// PRESET 1
@@ -150,12 +155,16 @@ public class Game {
 		return sections;
 	}
 
+	public List<Projectile> getProjectiles() {
+		return projectiles;
+	}
+
 	public Player getPlayer() {
 		return player;
 	}
 
 	public void input(Window window) {
-		if (window.isKeyPressed(GLFW_KEY_SPACE)) System.out.println("Shuriken are being thrown");
+		spacePressed = window.isKeyPressed(GLFW_KEY_SPACE);
 	}
 
 	public void update(float interval) {
@@ -165,7 +174,8 @@ public class Game {
 		else screenSpeed = 1.2f;
 		screenPos += screenSpeed*timeScale*interval;
 
-		if (player.getPosY() - screenPos < 0) { // TODO set appropriate handle for falling out of the world
+		// TODO set appropriate handle for falling out of the world
+		if (player.getPosY() - screenPos < 0) {
 			player.setPosY(screenPos);
 			player.setAttached(true);
 		}
@@ -178,10 +188,18 @@ public class Game {
 			float distanceX = mouseX - player.getPosX();
 			float distanceY = mouseY + screenPos - player.getPosY();
 
-			player.setSpeedX(distanceX/10);
-			player.setSpeedY(distanceY/10);
+			player.setSpeedX(distanceX/10f);
+			player.setSpeedY(distanceY/10f);
 
 			player.setAttached(false);
+		}
+
+		// Space press handle
+		if (spacePressed && !lastUpdateSpaceState) {
+			float distanceX = mouseX - player.getPosX();
+			float distanceY = mouseY + screenPos - player.getPosY();
+
+			projectiles.add(new Projectile(player.getPosX(), player.getPosY(), distanceX/10f, distanceY/10f));
 		}
 
 		// Used later in collision detection
@@ -199,10 +217,15 @@ public class Game {
 		}
 
 		// Update speed and position of projectiles
-		for (Projectile projectile : projectiles) {
-			projectile.adjustSpeedY(-gravityAccel*timeScale*interval);
+		for (Iterator<Projectile> iter = projectiles.listIterator(); iter.hasNext(); ) {
+			Projectile projectile = iter.next();
+			//projectile.adjustSpeedY(-gravityAccel*timeScale*interval);
 			projectile.adjustPosX(projectile.getSpeedX()*timeScale*interval);
 			projectile.adjustPosY(projectile.getSpeedY()*timeScale*interval);
+			if (projectile.getPosY() - screenPos < 0
+			 || projectile.getPosY() - screenPos > height
+			 || projectile.getPosX() < 0
+			 || projectile.getPosX() > width) iter.remove();
 		}
 
 		// Add sections if needed
@@ -213,7 +236,7 @@ public class Game {
 		for (Section section : sections) {
 			for (Wall wall : section.getWalls()) {
 				// Check for collision with enemies
-				wall.updateState(player, interval);
+				wall.updateState(this, interval);
 				if (wall.enemy != null) {
 					if (Math.hypot(player.getPosX() - wall.enemy.posX,
 							player.getPosY() - wall.enemy.posY) < 50) wall.enemy.engage(player);
@@ -226,6 +249,7 @@ public class Game {
 		}
 
 		lastUpdateLeftButtonState = leftButtonPressed;
+		lastUpdateSpaceState = spacePressed;
 	}
 
 	private void checkCollision(Wall wall, float prevPosX, float prevPosY) {

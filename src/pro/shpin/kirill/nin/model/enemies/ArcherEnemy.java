@@ -19,12 +19,14 @@ public class ArcherEnemy extends Enemy {
 	}
 
 	@Override
-	public void updateState(Player player, float interval) {
-		updatesSinceLastShot += 600f * Game.timeScale * interval;
-		if (updatesSinceLastShot < 150) return;
+	public void updateState(Game game, float interval) {
+		updatesSinceLastShot += 600f * game.timeScale * interval;
+		if (updatesSinceLastShot < 10000) return;
 		updatesSinceLastShot = 0f;
 
+		Player player = game.getPlayer();
+
 		double theta = Math.atan2(player.getPosY()-posY, player.getPosX()-posX);
-		Game.projectiles.add(new Projectile(posX, posY, Math.cos(theta) * STRENGTH, Math.sin(theta) * STRENGTH));
+		game.getProjectiles().add(new Projectile(posX, posY, Math.cos(theta) * STRENGTH, Math.sin(theta) * STRENGTH));
 	}
 }

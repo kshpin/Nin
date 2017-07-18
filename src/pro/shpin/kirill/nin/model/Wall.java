@@ -19,7 +19,7 @@ public class Wall {
 		this.enemy = enemy;
 	}
 
-	public void updateState(Player player, float interval) {
-		if (enemy != null) enemy.updateState(player, interval);
+	public void updateState(Game game, float interval) {
+		if (enemy != null) enemy.updateState(game, interval);
 	}
 }

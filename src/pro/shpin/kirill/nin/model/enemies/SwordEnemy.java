@@ -2,7 +2,6 @@ package pro.shpin.kirill.nin.model.enemies;
 
 import pro.shpin.kirill.nin.model.Game;
 import pro.shpin.kirill.nin.model.Player;
-import pro.shpin.kirill.nin.model.Wall;
 
 public class SwordEnemy extends Enemy {
 
@@ -41,8 +40,8 @@ public class SwordEnemy extends Enemy {
 	}
 
 	@Override
-	public void updateState(Player player, float interval) {
-		updatesSinceLastHit += 600f * Game.timeScale * interval;
+	public void updateState(Game game, float interval) {
+		updatesSinceLastHit += 600f * game.timeScale * interval;
 		posX += MOVE_SPEED * moveDirection;
 		if (posX > origPosX + wallWidth) {
 			posX = origPosX + wallWidth;

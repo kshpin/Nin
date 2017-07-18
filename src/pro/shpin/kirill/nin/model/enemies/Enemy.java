@@ -17,5 +17,5 @@ public abstract class Enemy {
 
 	public abstract void engage(Player player);
 
-	public abstract void updateState(Player player, float interval);
+	public abstract void updateState(Game game, float interval);
 }

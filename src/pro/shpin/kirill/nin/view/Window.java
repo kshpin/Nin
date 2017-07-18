@@ -2,11 +2,8 @@ package pro.shpin.kirill.nin.view;
 
 import org.lwjgl.opengl.GL;
 import pro.shpin.kirill.nin.GLUtil;
-import pro.shpin.kirill.nin.model.Section;
+import pro.shpin.kirill.nin.model.*;
 import pro.shpin.kirill.nin.model.enemies.Enemy;
-import pro.shpin.kirill.nin.model.Game;
-import pro.shpin.kirill.nin.model.Player;
-import pro.shpin.kirill.nin.model.Wall;
 
 import java.util.List;
 
@@ -55,6 +52,7 @@ public class Window {
 
 		drawSideWalls();
 		drawSections(game.screenPos, game.getSections());
+		drawProjectiles(game.screenPos, game.getProjectiles());
 		if (game.leftButtonPressed) drawDirection(game.screenPos, game);
 		drawPlayer(game.screenPos, game.getPlayer());
 
@@ -90,6 +88,21 @@ public class Window {
 							0, 0.5f, 0.5f, 0
 					);
 			}
+		}
+	}
+
+	private void drawProjectiles(float offset, List<Projectile> projectiles) {
+		for (Projectile projectile : projectiles) {
+			GLUtil.fillRectCenter(
+					projectile.getPosX(),
+					projectile.getPosY() - offset,
+					Game.PROJECTILE_DIMENSION,
+					Game.PROJECTILE_DIMENSION,
+					0,
+					0.1f,
+					0.1f,
+					0.1f
+			);
 		}
 	}
 
