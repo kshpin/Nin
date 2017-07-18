@@ -74,12 +74,12 @@ public class Player {
 		this.speedY = (float) speedY;
 	}
 
-	public void adjustSpeedY(float speedX) {
-		this.speedX += speedX;
+	public void adjustSpeedY(float speedY) {
+		this.speedY += speedY;
 	}
 
-	public void adjustSpeedY(double speedX) {
-		this.speedX += (float) speedX;
+	public void adjustSpeedY(double speedY) {
+		this.speedY += (float) speedY;
 	}
 
 	public boolean isAttached() {

@@ -94,7 +94,7 @@ public class Game {
 		presets.add(new SectionPrototype(new float[] {
 				2,
 				200f, 200f, 40f, 70f, SectionPrototype.NO_ENEMY,
-				528f, 263f, 120f, 80f, SectionPrototype.ARCHER_ENEMY
+				528f, 263f, 120f, 80f, SectionPrototype.SWORD_ENEMY
 		}));
 
 		// PRESET 1
