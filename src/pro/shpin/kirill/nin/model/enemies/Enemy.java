@@ -5,12 +5,12 @@ import pro.shpin.kirill.nin.model.Player;
 
 public abstract class Enemy {
 
-	public float posX;
-	public float posY;
+	float posX;
+	float posY;
 
-	public boolean isAlive = true;
+	boolean isAlive = true;
 
-	public Enemy(float x, float y) {
+	Enemy(float x, float y) {
 		this.posX = x;
 		this.posY = y + Game.ENTITY_HEIGHT_HALF;
 	}
@@ -18,4 +18,16 @@ public abstract class Enemy {
 	public abstract void engage(Player player);
 
 	public abstract void updateState(Game game, float interval);
+
+	public float getPosX() {
+		return posX;
+	}
+
+	public float getPosY() {
+		return posY;
+	}
+
+	public boolean isAlive() {
+		return isAlive;
+	}
 }

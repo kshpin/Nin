@@ -1,11 +1,9 @@
 package pro.shpin.kirill.nin.model;
 
+import pro.shpin.kirill.nin.model.enemies.Enemy;
 import pro.shpin.kirill.nin.view.Window;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -23,13 +21,16 @@ public class Game {
 
 	private List<SectionPrototype> presets;
 	private List<Section> sections;
+	private int numSections = 0;
 
-	public List<Projectile> projectiles;
+	static final int PIXELS_PER_SECTION = 400;
+
+	private List<Projectile> projectiles;
+
+	public float projectileSpeed = 20;
 
 	private int width;
 	private int height;
-
-	public static final int PIXELS_PER_SECTION = 400;
 
 	private float gravityAccel;
 	public float timeScale;
@@ -44,7 +45,6 @@ public class Game {
 	public int mouseY;
 
 	public boolean leftButtonPressed = false;
-	private boolean rightButtonPressed = false;
 	private boolean lastUpdateLeftButtonState = false;
 
 	private boolean spacePressed = false;
@@ -58,8 +58,8 @@ public class Game {
 		rng = new Random();
 
 		createPresets();
-		sections = new ArrayList<>();
-		sections.add(presets.get(/*presets.size()-1*/0).build(0));
+		sections = new LinkedList<>();
+		sections.add(presets.get(/*presets.size()-1*/0).build(numSections++));
 
 		projectiles = new ArrayList<>();
 
@@ -78,7 +78,6 @@ public class Game {
 		});
 		glfwSetMouseButtonCallback(window.getHandle(), (windowHandle, button, action, mode) -> {
 			leftButtonPressed  = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS;
-			rightButtonPressed = button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS;
 		});
 	}
 
@@ -199,7 +198,29 @@ public class Game {
 			float distanceX = mouseX - player.getPosX();
 			float distanceY = mouseY + screenPos - player.getPosY();
 
-			projectiles.add(new Projectile(player.getPosX(), player.getPosY(), distanceX/10f, distanceY/10f));
+			projectiles.add(new Projectile(player.getPosX(), player.getPosY(), distanceX/10f, distanceY/10f, true));
+		}
+
+		// Update speed and position of projectiles, remove if they are out of the screen
+		for (Iterator<Projectile> iter = projectiles.listIterator(); iter.hasNext(); ) {
+			Projectile projectile = iter.next();
+			//projectile.adjustSpeedY(-gravityAccel*timeScale*interval);
+			projectile.adjustPosX(projectile.getSpeedX()*timeScale*interval);
+			projectile.adjustPosY(projectile.getSpeedY()*timeScale*interval);
+
+			if (projectile.getPosY() - screenPos < 0
+					|| projectile.getPosY() - screenPos > height
+					|| projectile.getPosX() < 0
+					|| projectile.getPosX() > width) iter.remove();
+
+			// TODO set appropriate handle for getting hit with the enemies' projectiles
+			if (projectile.getPosX() > player.getPosX() - ENTITY_WIDTH_HALF
+			 && projectile.getPosX() < player.getPosX() + ENTITY_WIDTH_HALF
+			 && projectile.getPosY() > player.getPosY() - ENTITY_HEIGHT_HALF
+			 && projectile.getPosY() < player.getPosY() + ENTITY_HEIGHT_HALF
+			 && !projectile.isShotByPlayer()) {
+				System.out.println("Hit by enemies' projectile");
+			}
 		}
 
 		// Used later in collision detection
@@ -216,35 +237,45 @@ public class Game {
 			player.setSpeedY(0);
 		}
 
-		// Update speed and position of projectiles
-		for (Iterator<Projectile> iter = projectiles.listIterator(); iter.hasNext(); ) {
-			Projectile projectile = iter.next();
-			//projectile.adjustSpeedY(-gravityAccel*timeScale*interval);
-			projectile.adjustPosX(projectile.getSpeedX()*timeScale*interval);
-			projectile.adjustPosY(projectile.getSpeedY()*timeScale*interval);
-			if (projectile.getPosY() - screenPos < 0
-			 || projectile.getPosY() - screenPos > height
-			 || projectile.getPosX() < 0
-			 || projectile.getPosX() > width) iter.remove();
-		}
-
 		// Add sections if needed
 		if (screenPos > (sections.size()-4)*PIXELS_PER_SECTION) {
-			sections.add(presets.get(rng.nextInt(presets.size())).build(sections.size()-1));
+			sections.add(presets.get(rng.nextInt(presets.size())).build(numSections++));
+			//if (sections.size() > 3) sections.remove(0);
 		}
 
 		for (Section section : sections) {
 			for (Wall wall : section.getWalls()) {
 				// Check for collision with enemies
 				wall.updateState(this, interval);
-				if (wall.enemy != null) {
-					if (Math.hypot(player.getPosX() - wall.enemy.posX,
-							player.getPosY() - wall.enemy.posY) < 50) wall.enemy.engage(player);
-					if (!wall.enemy.isAlive) wall.enemy = null;
+
+				Enemy enemy = wall.getEnemy();
+
+				// Remove enemy if hit by player's projectile
+				enemyNotNull : if (enemy != null) {
+					for (Projectile projectile : projectiles) {
+						if (projectile.getPosX() > enemy.getPosX() - ENTITY_WIDTH_HALF
+						 && projectile.getPosX() < enemy.getPosX() + ENTITY_WIDTH_HALF
+						 && projectile.getPosY() > enemy.getPosY() - ENTITY_HEIGHT_HALF
+						 && projectile.getPosY() < enemy.getPosY() + ENTITY_HEIGHT_HALF
+						 && projectile.isShotByPlayer()) {
+							wall.nullifyEnemy();
+							break enemyNotNull;
+						}
+					}
+
+					if (Math.hypot(player.getPosX() - enemy.getPosX(),
+							player.getPosY() - enemy.getPosY()) < 50) enemy.engage(player);
+					if (!enemy.isAlive()) wall.nullifyEnemy();
 				}
 
 				// Check for collision with wall
 				checkCollision(wall, prevPosX, prevPosY);
+
+				// Remove any projectiles that are in contact with walls
+				projectiles.removeIf(projectile -> projectile.getPosX() > wall.x
+												&& projectile.getPosX() < wall.x + wall.width
+												&& projectile.getPosY() > wall.y
+												&& projectile.getPosY() < wall.y + wall.height);
 			}
 		}
 

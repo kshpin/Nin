@@ -9,7 +9,7 @@ public class Wall {
 	public float width;
 	public float height;
 
-	public Enemy enemy;
+	private Enemy enemy;
 
 	public Wall(float x, float y, float width, float height, Enemy enemy) {
 		this.x = x;
@@ -21,5 +21,13 @@ public class Wall {
 
 	public void updateState(Game game, float interval) {
 		if (enemy != null) enemy.updateState(game, interval);
+	}
+
+	public Enemy getEnemy() {
+		return enemy;
+	}
+
+	public void nullifyEnemy() {
+		this.enemy = null;
 	}
 }

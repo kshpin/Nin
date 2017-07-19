@@ -6,7 +6,6 @@ import pro.shpin.kirill.nin.model.Projectile;
 
 public class ArcherEnemy extends Enemy {
 
-	private static final float STRENGTH = 20;
 	private float updatesSinceLastShot = 0f;
 
 	public ArcherEnemy(float x, float y) {
@@ -27,6 +26,12 @@ public class ArcherEnemy extends Enemy {
 		Player player = game.getPlayer();
 
 		double theta = Math.atan2(player.getPosY()-posY, player.getPosX()-posX);
-		game.getProjectiles().add(new Projectile(posX, posY, Math.cos(theta) * STRENGTH, Math.sin(theta) * STRENGTH));
+		game.getProjectiles().add(new Projectile(
+				posX,
+				posY,
+				Math.cos(theta) * game.projectileSpeed,
+				Math.sin(theta) * game.projectileSpeed,
+				false
+		));
 	}
 }

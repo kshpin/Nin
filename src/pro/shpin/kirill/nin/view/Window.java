@@ -3,7 +3,6 @@ package pro.shpin.kirill.nin.view;
 import org.lwjgl.opengl.GL;
 import pro.shpin.kirill.nin.GLUtil;
 import pro.shpin.kirill.nin.model.*;
-import pro.shpin.kirill.nin.model.enemies.Enemy;
 
 import java.util.List;
 
@@ -51,10 +50,10 @@ public class Window {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		drawSideWalls();
-		drawSections(game.screenPos, game.getSections());
-		drawProjectiles(game.screenPos, game.getProjectiles());
-		if (game.leftButtonPressed) drawDirection(game.screenPos, game);
-		drawPlayer(game.screenPos, game.getPlayer());
+		drawSections(game);
+		drawProjectiles(game);
+		if (game.leftButtonPressed) drawDirection(game);
+		drawPlayer(game);
 
 		glfwSwapBuffers(windowHandle);
 	}
@@ -64,25 +63,22 @@ public class Window {
 		GLUtil.fillRectCenter(width, height/2, 100, height, 0, 0, 0, 0);
 	}
 
-	private void drawSections(float offset, List<Section> sections) {
-		for (int i = 0; i < sections.size(); i++) {
-			if (i < sections.size() - 4) continue;
-
-			Section section = sections.get(i);
-
+	private void drawSections(Game game) {
+		List<Section> sections = game.getSections();
+		for (Section section : sections) {
 			for (Wall wall : section.getWalls()) {
 				GLUtil.fillRectCorner(
 						wall.x,
-						wall.y - offset,
+						wall.y - game.screenPos,
 						wall.width,
 						wall.height,
 						0, 0, 0, 0
 				);
 
-				if (wall.enemy != null)
+				if (wall.getEnemy() != null)
 					GLUtil.fillRectCenter(
-							wall.enemy.posX,
-							wall.enemy.posY - offset,
+							wall.getEnemy().getPosX(),
+							wall.getEnemy().getPosY() - game.screenPos,
 							Game.ENTITY_WIDTH,
 							Game.ENTITY_HEIGHT,
 							0, 0.5f, 0.5f, 0
@@ -91,28 +87,38 @@ public class Window {
 		}
 	}
 
-	private void drawProjectiles(float offset, List<Projectile> projectiles) {
-		for (Projectile projectile : projectiles) {
+	private void drawProjectiles(Game game) {
+		for (Projectile projectile : game.getProjectiles()) {
 			GLUtil.fillRectCenter(
 					projectile.getPosX(),
-					projectile.getPosY() - offset,
+					projectile.getPosY() - game.screenPos,
 					Game.PROJECTILE_DIMENSION,
 					Game.PROJECTILE_DIMENSION,
 					0,
-					0.1f,
-					0.1f,
-					0.1f
+					0.2f,
+					0.2f,
+					0.2f
 			);
 		}
 	}
 
-	private void drawDirection(float offset, Game game) {
+	private void drawDirection(Game game) {
 		Player player = game.getPlayer();
-		GLUtil.drawLine(player.getPosX(), player.getPosY() - offset, game.mouseX, game.mouseY, 0, 1, 0);
+		GLUtil.drawLine(player.getPosX(), player.getPosY() - game.screenPos, game.mouseX, game.mouseY, 0, 1, 0);
 	}
 
-	private void drawPlayer(float offset, Player player) {
-		GLUtil.fillRectCenter(player.getPosX(), player.getPosY() - offset, Game.ENTITY_WIDTH, Game.ENTITY_HEIGHT, 0, 0, 0.5f, 1);
+	private void drawPlayer(Game game) {
+		Player player = game.getPlayer();
+		GLUtil.fillRectCenter(
+				player.getPosX(),
+				player.getPosY() - game.screenPos,
+				Game.ENTITY_WIDTH,
+				Game.ENTITY_HEIGHT,
+				0,
+				0,
+				0.5f,
+				1
+		);
 	}
 
 	public boolean isKeyPressed(int keyCode) {

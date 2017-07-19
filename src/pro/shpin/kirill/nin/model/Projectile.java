@@ -7,18 +7,22 @@ public class Projectile {
 	private float speedX;
 	private float speedY;
 
-	public Projectile(float posX, float posY, float speedX, float speedY) {
+	private final boolean shotByPlayer;
+
+	public Projectile(float posX, float posY, float speedX, float speedY, boolean shotByPlayer) {
 		this.posX = posX;
 		this.posY = posY;
 		this.speedX = speedX;
 		this.speedY = speedY;
+		this.shotByPlayer = shotByPlayer;
 	}
 
-	public Projectile(float posX, float posY, double speedX, double speedY) {
+	public Projectile(float posX, float posY, double speedX, double speedY, boolean shotByPlayer) {
 		this.posX = posX;
 		this.posY = posY;
 		this.speedX = (float) speedX;
 		this.speedY = (float) speedY;
+		this.shotByPlayer = shotByPlayer;
 	}
 
 	public float getPosX() {
@@ -51,5 +55,9 @@ public class Projectile {
 
 	public void adjustSpeedY(float speedY) {
 		this.speedY += speedY;
+	}
+
+	public boolean isShotByPlayer() {
+		return shotByPlayer;
 	}
 }
