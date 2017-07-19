@@ -72,7 +72,7 @@ public class Engine implements Runnable {
 
 	private void input() {
 		window.updateInput();
-		game.input(window);
+		game.updateInput(window);
 	}
 
 	private void sync() {

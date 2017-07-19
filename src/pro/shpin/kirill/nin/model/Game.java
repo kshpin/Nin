@@ -162,11 +162,12 @@ public class Game {
 		return player;
 	}
 
-	public void input(Window window) {
+	public void updateInput(Window window) {
 		spacePressed = window.isKeyPressed(GLFW_KEY_SPACE);
 	}
 
 	public void update(float interval) {
+		// Move the screen up
 		float playerScreenPos = player.getPosY() - screenPos;
 		if (playerScreenPos*6 > height*5) screenSpeed = player.getSpeedY();
 		else if (playerScreenPos*3 > height*2) screenSpeed = 3.6f;
@@ -177,8 +178,40 @@ public class Game {
 		if (player.getPosY() - screenPos < 0) {
 			player.setPosY(screenPos);
 			player.setAttached(true);
+			System.out.println("Death by falling off the screen");
 		}
 
+		processInput();
+
+		updateProjectiles(interval);
+
+		// Used later in collision detection
+		float prevPosX = player.getPosX();
+		float prevPosY = player.getPosY();
+
+		// Update speed and position based on gravity and time scale
+		if (!player.isAttached()) {
+			player.adjustSpeedY(-gravityAccel*timeScale*interval);
+			player.adjustPosX(player.getSpeedX()*timeScale*interval);
+			player.adjustPosY(player.getSpeedY()*timeScale*interval);
+		} else {
+			player.setSpeedX(0);
+			player.setSpeedY(0);
+		}
+
+		// Add sections if needed
+		if (screenPos > (sections.size()-4)*PIXELS_PER_SECTION) {
+			sections.add(presets.get(rng.nextInt(presets.size())).build(numSections++));
+			//if (sections.size() > 5) sections.remove(0);
+		}
+
+		updateSections(interval, prevPosX, prevPosY);
+
+		lastUpdateLeftButtonState = leftButtonPressed;
+		lastUpdateSpaceState = spacePressed;
+	}
+
+	private void processInput() {
 		if (leftButtonPressed) timeScale = SLOWED_TIME_SCALE;
 		else timeScale = NORMAL_TIME_SCALE;
 
@@ -200,8 +233,9 @@ public class Game {
 
 			projectiles.add(new Projectile(player.getPosX(), player.getPosY(), distanceX/10f, distanceY/10f, true));
 		}
+	}
 
-		// Update speed and position of projectiles, remove if they are out of the screen
+	private void updateProjectiles(float interval) {
 		for (Iterator<Projectile> iter = projectiles.listIterator(); iter.hasNext(); ) {
 			Projectile projectile = iter.next();
 			//projectile.adjustSpeedY(-gravityAccel*timeScale*interval);
@@ -222,27 +256,9 @@ public class Game {
 				System.out.println("Hit by enemies' projectile");
 			}
 		}
+	}
 
-		// Used later in collision detection
-		float prevPosX = player.getPosX();
-		float prevPosY = player.getPosY();
-
-		// Update speed and position based on gravity and time scale
-		if (!player.isAttached()) {
-			player.adjustSpeedY(-gravityAccel*timeScale*interval);
-			player.adjustPosX(player.getSpeedX()*timeScale*interval);
-			player.adjustPosY(player.getSpeedY()*timeScale*interval);
-		} else {
-			player.setSpeedX(0);
-			player.setSpeedY(0);
-		}
-
-		// Add sections if needed
-		if (screenPos > (sections.size()-4)*PIXELS_PER_SECTION) {
-			sections.add(presets.get(rng.nextInt(presets.size())).build(numSections++));
-			//if (sections.size() > 3) sections.remove(0);
-		}
-
+	private void updateSections(float interval, float prevPosX, float prevPosY) {
 		for (Section section : sections) {
 			for (Wall wall : section.getWalls()) {
 				// Check for collision with enemies
@@ -278,9 +294,6 @@ public class Game {
 												&& projectile.getPosY() < wall.y + wall.height);
 			}
 		}
-
-		lastUpdateLeftButtonState = leftButtonPressed;
-		lastUpdateSpaceState = spacePressed;
 	}
 
 	private void checkCollision(Wall wall, float prevPosX, float prevPosY) {
