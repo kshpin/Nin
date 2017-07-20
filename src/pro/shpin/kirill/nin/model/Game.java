@@ -242,7 +242,7 @@ public class Game {
 
 		// Space press handle
 		if (spacePressed && !lastUpdateSpaceState) {
-			double theta = Math.atan2(player.getPosY()-mouseY, player.getPosX()-mouseX);
+			double theta = Math.atan2(mouseY-player.getPosY()+screenPos, mouseX-player.getPosX());
 
 			projectiles.add(new Projectile(
 					player.getPosX(),
