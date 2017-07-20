@@ -18,6 +18,8 @@ public class Window {
 	private long windowHandle;
 
 	private int deathScreenTex;
+	private int playerTex;
+	private int enemyTex;
 
 	public Window(String title, int width, int height) {
 		this.width = width;
@@ -36,6 +38,11 @@ public class Window {
 
 		glEnable(GL_TEXTURE_2D);
 		deathScreenTex = GLUtil.loadTexture("/deathScreenBlue.png");
+		playerTex = GLUtil.loadTexture("/ninjaPlayer.png");
+		enemyTex = GLUtil.loadTexture("/ninjaEnemy.png");
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -83,12 +90,13 @@ public class Window {
 				);
 
 				if (wall.getEnemy() != null) {
-					GLUtil.fillRectCenter(
+					GLUtil.texRectCenter(
 							wall.getEnemy().getPosX(),
 							wall.getEnemy().getPosY() - game.screenPos,
 							Game.ENTITY_WIDTH,
 							Game.ENTITY_HEIGHT,
-							0, 1f, 0f, 0f
+							0,
+							enemyTex
 					);
 				}
 			}
@@ -117,15 +125,13 @@ public class Window {
 
 	private void drawPlayer(Game game) {
 		Player player = game.getPlayer();
-		GLUtil.fillRectCenter(
+		GLUtil.texRectCenter(
 				player.getPosX(),
 				player.getPosY() - game.screenPos,
 				Game.ENTITY_WIDTH,
 				Game.ENTITY_HEIGHT,
 				0,
-				0,
-				0.5f,
-				1
+				playerTex
 		);
 	}
 

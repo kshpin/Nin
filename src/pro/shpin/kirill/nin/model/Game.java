@@ -188,7 +188,6 @@ public class Game {
 		else screenSpeed = 1.2f;
 		if (!firstAttach) screenPos += screenSpeed*timeScale*interval;
 
-		// TODO set appropriate handle for falling out of the world
 		if (player.getPosY() - screenPos < 0) {
 			player.die();
 		}
@@ -243,10 +242,15 @@ public class Game {
 
 		// Space press handle
 		if (spacePressed && !lastUpdateSpaceState) {
-			float distanceX = mouseX - player.getPosX();
-			float distanceY = mouseY + screenPos - player.getPosY();
+			double theta = Math.atan2(player.getPosY()-mouseY, player.getPosX()-mouseX);
 
-			projectiles.add(new Projectile(player.getPosX(), player.getPosY(), distanceX/10f, distanceY/10f, true));
+			projectiles.add(new Projectile(
+					player.getPosX(),
+					player.getPosY(),
+					Math.cos(theta) * projectileSpeed,
+					Math.sin(theta) * projectileSpeed,
+					true
+			));
 		}
 	}
 
@@ -262,7 +266,6 @@ public class Game {
 					|| projectile.getPosX() < 0
 					|| projectile.getPosX() > width) iter.remove();
 
-			// TODO set appropriate handle for getting hit with the enemies' projectiles
 			if (projectile.getPosX() > player.getPosX() - ENTITY_WIDTH_HALF
 			 && projectile.getPosX() < player.getPosX() + ENTITY_WIDTH_HALF
 			 && projectile.getPosY() > player.getPosY() - ENTITY_HEIGHT_HALF
