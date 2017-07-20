@@ -1,19 +1,22 @@
 package pro.shpin.kirill.nin;
 
-import static org.lwjgl.opengl.GL11.*;
-
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
 
-import javax.imageio.ImageIO;
+import static org.lwjgl.opengl.GL11.*;
 
 public class GLUtil {
 
-	public static void texRect(float x, float y, float w, float h, float rot) {
+	public static void texRectCenter(float x, float y, float w, float h, float rot, int tex) {
 		glPushMatrix();
 
 		glTranslatef(x, y, 0);
 		glRotatef(rot, 0, 0, 1);
+
+		glColor4f(1, 1, 1, 1);
+
+		glBindTexture(GL_TEXTURE_2D, tex);
 
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 1);
@@ -25,6 +28,8 @@ public class GLUtil {
 		glTexCoord2f(0, 0);
 		glVertex2f(-w/2,  h/2);
 		glEnd();
+
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glPopMatrix();
 	}

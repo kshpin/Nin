@@ -17,6 +17,8 @@ public class Window {
 
 	private long windowHandle;
 
+	private int deathScreenTex;
+
 	public Window(String title, int width, int height) {
 		this.width = width;
 		this.height = height;
@@ -30,7 +32,10 @@ public class Window {
 		glfwMakeContextCurrent(windowHandle);
 
 		GL.createCapabilities();
-		glClearColor(1f, 0.79f, 0.28f, 1f);
+		glClearColor(0.31f, 0.84f, 0.26f, 1f);
+
+		glEnable(GL_TEXTURE_2D);
+		deathScreenTex = GLUtil.loadTexture("/deathScreenBlue.png");
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -47,13 +52,15 @@ public class Window {
 	}
 
 	public void render(Game game) {
-		glClear(GL_COLOR_BUFFER_BIT);
+		if (game.getPlayer().isAlive()) {
+			glClear(GL_COLOR_BUFFER_BIT);
 
-		drawSideWalls();
-		drawSections(game);
-		drawProjectiles(game);
-		if (game.leftButtonPressed) drawDirection(game);
-		drawPlayer(game);
+			drawSideWalls();
+			drawSections(game);
+			drawProjectiles(game);
+			if (game.leftButtonPressed) drawDirection(game);
+			drawPlayer(game);
+		} else drawDeathScreen();
 
 		glfwSwapBuffers(windowHandle);
 	}
@@ -72,17 +79,18 @@ public class Window {
 						wall.y - game.screenPos,
 						wall.width,
 						wall.height,
-						0, 0, 0, 0
+						0, 0f, 0f, 0f
 				);
 
-				if (wall.getEnemy() != null)
+				if (wall.getEnemy() != null) {
 					GLUtil.fillRectCenter(
 							wall.getEnemy().getPosX(),
 							wall.getEnemy().getPosY() - game.screenPos,
 							Game.ENTITY_WIDTH,
 							Game.ENTITY_HEIGHT,
-							0, 0.5f, 0.5f, 0
+							0, 1f, 0f, 0f
 					);
+				}
 			}
 		}
 	}
@@ -119,6 +127,10 @@ public class Window {
 				0.5f,
 				1
 		);
+	}
+
+	private void drawDeathScreen() {
+		GLUtil.texRectCenter(width/2f, height/2f, width/4f*3f, height/4f*3f, 0, deathScreenTex);
 	}
 
 	public boolean isKeyPressed(int keyCode) {

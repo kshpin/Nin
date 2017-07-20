@@ -17,13 +17,18 @@ public class Game {
 
 	public static final int PROJECTILE_DIMENSION = 10;
 
+	private static final float GRAVITY_ACCEL = 1f;
+
+	private static final float NORMAL_TIME_SCALE = 30f;
+	private static final float SLOWED_TIME_SCALE = NORMAL_TIME_SCALE/5f;
+
+	static final int PIXELS_PER_SECTION = 400;
+
 	private Player player;
 
 	private List<SectionPrototype> presets;
 	private List<Section> sections;
-	private int numSections = 0;
-
-	static final int PIXELS_PER_SECTION = 400;
+	private int numSections;
 
 	private List<Projectile> projectiles;
 
@@ -32,17 +37,15 @@ public class Game {
 	private int width;
 	private int height;
 
-	private float gravityAccel;
-	public float timeScale;
-
-	private static final float NORMAL_TIME_SCALE = 30f;
-	private static final float SLOWED_TIME_SCALE = NORMAL_TIME_SCALE/5f;
+	public float timeScale = NORMAL_TIME_SCALE;
 
 	private float screenSpeed;
 	public float screenPos;
 
 	public int mouseX;
 	public int mouseY;
+
+	private boolean firstAttach;
 
 	public boolean leftButtonPressed = false;
 	private boolean lastUpdateLeftButtonState = false;
@@ -53,32 +56,37 @@ public class Game {
 	private Random rng;
 
 	public void init(Window window) {
-		player = new Player(window.width/2, 200);
+		createPresets();
 
 		rng = new Random();
-
-		createPresets();
-		sections = new LinkedList<>();
-		sections.add(presets.get(/*presets.size()-1*/0).build(numSections++));
-
-		projectiles = new ArrayList<>();
 
 		width = window.width;
 		height = window.height;
 
-		gravityAccel = 1;
-		timeScale = NORMAL_TIME_SCALE;
-
-		screenSpeed = 1.2f;
-		screenPos = 0f;
-
 		glfwSetCursorPosCallback(window.getHandle(), (windowHandle, posX, posY) -> {
 			mouseX = (int) posX;
-			mouseY = window.height - (int) posY;
+			mouseY = height - (int) posY;
 		});
 		glfwSetMouseButtonCallback(window.getHandle(), (windowHandle, button, action, mode) -> {
 			leftButtonPressed  = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS;
 		});
+
+		reinit();
+	}
+
+	private void reinit() {
+		player = new Player(width/2f, 50f + ENTITY_HEIGHT_HALF);
+
+		numSections = 0;
+		sections = new ArrayList<>();
+		sections.add(presets.get(0).build(numSections++));
+
+		projectiles = new ArrayList<>();
+
+		screenSpeed = 1.2f;
+		screenPos = 0f;
+
+		firstAttach = true;
 	}
 
 	private void createPresets() {
@@ -96,25 +104,31 @@ public class Game {
 
 		// PRESET 0
 		presets.add(new SectionPrototype(new float[] {
+				1,
+				150f, 0f, 500f, 50f, SectionPrototype.NO_ENEMY
+		}));
+
+		// PRESET 1
+		presets.add(new SectionPrototype(new float[] {
 				2,
 				200f, 200f, 40f, 70f, SectionPrototype.NO_ENEMY,
 				528f, 263f, 120f, 80f, SectionPrototype.ARCHER_ENEMY
 		}));
 
-		// PRESET 1
+		// PRESET 2
 		presets.add(new SectionPrototype(new float[] {
 				2,
 				400f, 50f, 150f, 120f, SectionPrototype.NO_ENEMY,
 				650f, 300f, 50f, 60f, SectionPrototype.NO_ENEMY
 		}));
 
-		// PRESET 2
+		// PRESET 3
 		presets.add(new SectionPrototype(new float[] {
 				1,
 				500f, 100f, 20f, 70f, SectionPrototype.NO_ENEMY
 		}));
 
-		// PRESET 3
+		// PRESET 4
 		presets.add(new SectionPrototype(new float[] {
 				6,
 				70f, 20f, 100f, 30f, SectionPrototype.NO_ENEMY,
@@ -125,14 +139,14 @@ public class Game {
 				650f, 90f, 50f, 250f, SectionPrototype.NO_ENEMY
 		}));
 
-		// PRESET 4
+		// PRESET 5
 		presets.add(new SectionPrototype(new float[] {
 				2,
 				100, 30, 450, 250, SectionPrototype.NO_ENEMY,
 				650, 10, 20, 70, SectionPrototype.NO_ENEMY
 		}));
 
-		// PRESET 5
+		// PRESET 6
 		presets.add(new SectionPrototype(new float[] {
 				3,
 				200, 10, 200, 150, SectionPrototype.NO_ENEMY,
@@ -140,7 +154,7 @@ public class Game {
 				600, 0, 150, 50, SectionPrototype.NO_ENEMY
 		}));
 
-		// PRESET 6
+		// PRESET 7
 		presets.add(new SectionPrototype(new float[] {
 				4,
 				50, 300, 150, 30, SectionPrototype.NO_ENEMY,
@@ -172,13 +186,11 @@ public class Game {
 		if (playerScreenPos*6 > height*5) screenSpeed = player.getSpeedY();
 		else if (playerScreenPos*3 > height*2) screenSpeed = 3.6f;
 		else screenSpeed = 1.2f;
-		screenPos += screenSpeed*timeScale*interval;
+		if (!firstAttach) screenPos += screenSpeed*timeScale*interval;
 
 		// TODO set appropriate handle for falling out of the world
 		if (player.getPosY() - screenPos < 0) {
-			player.setPosY(screenPos);
-			player.setAttached(true);
-			System.out.println("Death by falling off the screen");
+			player.die();
 		}
 
 		processInput();
@@ -189,9 +201,10 @@ public class Game {
 		float prevPosX = player.getPosX();
 		float prevPosY = player.getPosY();
 
-		// Update speed and position based on gravity and time scale
+		// Update player speed and position based on gravity and time scale
 		if (!player.isAttached()) {
-			player.adjustSpeedY(-gravityAccel*timeScale*interval);
+			firstAttach = false;
+			player.adjustSpeedY(-GRAVITY_ACCEL *timeScale*interval);
 			player.adjustPosX(player.getSpeedX()*timeScale*interval);
 			player.adjustPosY(player.getSpeedY()*timeScale*interval);
 		} else {
@@ -201,7 +214,7 @@ public class Game {
 
 		// Add sections if needed
 		if (screenPos > (sections.size()-4)*PIXELS_PER_SECTION) {
-			sections.add(presets.get(rng.nextInt(presets.size())).build(numSections++));
+			sections.add(presets.get(rng.nextInt(presets.size()-1)+1).build(numSections++));
 			//if (sections.size() > 5) sections.remove(0);
 		}
 
@@ -212,6 +225,8 @@ public class Game {
 	}
 
 	private void processInput() {
+		if (!player.isAlive() && spacePressed) reinit();
+
 		if (leftButtonPressed) timeScale = SLOWED_TIME_SCALE;
 		else timeScale = NORMAL_TIME_SCALE;
 
@@ -238,7 +253,7 @@ public class Game {
 	private void updateProjectiles(float interval) {
 		for (Iterator<Projectile> iter = projectiles.listIterator(); iter.hasNext(); ) {
 			Projectile projectile = iter.next();
-			//projectile.adjustSpeedY(-gravityAccel*timeScale*interval);
+			//projectile.adjustSpeedY(-GRAVITY_ACCEL*timeScale*interval);
 			projectile.adjustPosX(projectile.getSpeedX()*timeScale*interval);
 			projectile.adjustPosY(projectile.getSpeedY()*timeScale*interval);
 
@@ -253,7 +268,7 @@ public class Game {
 			 && projectile.getPosY() > player.getPosY() - ENTITY_HEIGHT_HALF
 			 && projectile.getPosY() < player.getPosY() + ENTITY_HEIGHT_HALF
 			 && !projectile.isShotByPlayer()) {
-				System.out.println("Hit by enemies' projectile");
+				player.die();
 			}
 		}
 	}

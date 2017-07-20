@@ -10,12 +10,15 @@ public class Player {
 
 	private boolean attached;
 
+	private boolean alive;
+
 	public Player(float x, float y) {
 		this.posX = x;
 		this.posY = y;
 		this.speedX = 0;
 		this.speedY = 0;
-		this.attached = false;
+		this.attached = true;
+		this.alive = true;
 	}
 
 	public float getPosX() {
@@ -104,5 +107,13 @@ public class Player {
 			posX += Game.ENTITY_WIDTH_HALF;
 			posY -= Game.ENTITY_HEIGHT_HALF;
 		}
+	}
+
+	public void die() {
+		this.alive = false;
+	}
+
+	public boolean isAlive() {
+		return alive;
 	}
 }
