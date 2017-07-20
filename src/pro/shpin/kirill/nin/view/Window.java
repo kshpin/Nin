@@ -20,6 +20,7 @@ public class Window {
 	private int deathScreenTex;
 	private int playerTex;
 	private int enemyTex;
+	private int wallTex;
 
 	public Window(String title, int width, int height) {
 		this.width = width;
@@ -40,6 +41,7 @@ public class Window {
 		deathScreenTex = GLUtil.loadTexture("/deathScreenBlue.png");
 		playerTex = GLUtil.loadTexture("/ninjaPlayer.png");
 		enemyTex = GLUtil.loadTexture("/ninjaEnemy.png");
+		wallTex = GLUtil.loadTexture("/brickWallTileBlack.jpg");
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -81,12 +83,15 @@ public class Window {
 		List<Section> sections = game.getSections();
 		for (Section section : sections) {
 			for (Wall wall : section.getWalls()) {
-				GLUtil.fillRectCorner(
+				GLUtil.tileTexRectCenter(
 						wall.x,
 						wall.y - game.screenPos,
 						wall.width,
 						wall.height,
-						0, 0f, 0f, 0f
+						0,
+						wallTex,
+						250,
+						150
 				);
 
 				if (wall.getEnemy() != null) {
@@ -96,7 +101,9 @@ public class Window {
 							Game.ENTITY_WIDTH,
 							Game.ENTITY_HEIGHT,
 							0,
-							enemyTex
+							enemyTex,
+							1f,
+							1f
 					);
 				}
 			}
@@ -131,12 +138,23 @@ public class Window {
 				Game.ENTITY_WIDTH,
 				Game.ENTITY_HEIGHT,
 				0,
-				playerTex
+				playerTex,
+				1f,
+				1f
 		);
 	}
 
 	private void drawDeathScreen() {
-		GLUtil.texRectCenter(width/2f, height/2f, width/4f*3f, height/4f*3f, 0, deathScreenTex);
+		GLUtil.texRectCenter(
+				width/2f,
+				height/2f,
+				width/4f*3f,
+				height/4f*3f,
+				0,
+				deathScreenTex,
+				1f,
+				1f
+		);
 	}
 
 	public boolean isKeyPressed(int keyCode) {

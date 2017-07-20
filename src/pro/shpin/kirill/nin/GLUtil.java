@@ -8,7 +8,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class GLUtil {
 
-	public static void texRectCenter(float x, float y, float w, float h, float rot, int tex) {
+	public static void texRectCenter(float x, float y, float w, float h, float rot, int tex, float repeatNumX, float repeatNumY) {
 		glPushMatrix();
 
 		glTranslatef(x, y, 0);
@@ -19,11 +19,11 @@ public class GLUtil {
 		glBindTexture(GL_TEXTURE_2D, tex);
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(0, 1);
+		glTexCoord2f(0, repeatNumY);
 		glVertex2f(-w/2, -h/2);
-		glTexCoord2f(1, 1);
+		glTexCoord2f(repeatNumX, repeatNumY);
 		glVertex2f( w/2, -h/2);
-		glTexCoord2f(1, 0);
+		glTexCoord2f(repeatNumX, 0);
 		glVertex2f( w/2,  h/2);
 		glTexCoord2f(0, 0);
 		glVertex2f(-w/2,  h/2);
@@ -32,6 +32,36 @@ public class GLUtil {
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glPopMatrix();
+	}
+
+	public static void texRectCorner(float x, float y, float w, float h, float rot, int tex, float repeatNumX, float repeatNumY) {
+		glPushMatrix();
+
+		glTranslatef(x, y, 0);
+		glRotatef(rot, 0, 0, 1);
+
+		glColor4f(1, 1, 1, 1);
+
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, repeatNumY);
+		glVertex2f(0, 0);
+		glTexCoord2f(repeatNumX, repeatNumY);
+		glVertex2f( w, 0);
+		glTexCoord2f(repeatNumX, 0);
+		glVertex2f( w,  h);
+		glTexCoord2f(0, 0);
+		glVertex2f(0,  h);
+		glEnd();
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glPopMatrix();
+	}
+
+	public static void tileTexRectCenter(float x, float y, float w, float h, float rot, int tex, int texWidth, int texHeight) {
+		texRectCorner(x, y, w, h, rot, tex, w/texWidth, h/texHeight);
 	}
 
 	public static void fillRectCenter(float x, float y, float w, float h, float rot, float red, float green, float blue) {
