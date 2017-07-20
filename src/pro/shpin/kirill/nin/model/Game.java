@@ -1,9 +1,13 @@
 package pro.shpin.kirill.nin.model;
 
+import pro.shpin.kirill.nin.Sound;
 import pro.shpin.kirill.nin.model.enemies.Enemy;
 import pro.shpin.kirill.nin.view.Window;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -37,6 +41,8 @@ public class Game {
 	private int width;
 	private int height;
 
+	private Sound swordSound;
+
 	public float timeScale = NORMAL_TIME_SCALE;
 
 	private float screenSpeed;
@@ -63,13 +69,15 @@ public class Game {
 		width = window.width;
 		height = window.height;
 
+		swordSound = new Sound("/sounds/knifeStab.wav");
+
 		glfwSetCursorPosCallback(window.getHandle(), (windowHandle, posX, posY) -> {
 			mouseX = (int) posX;
 			mouseY = height - (int) posY;
 		});
-		glfwSetMouseButtonCallback(window.getHandle(), (windowHandle, button, action, mode) -> {
-			leftButtonPressed  = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS;
-		});
+		glfwSetMouseButtonCallback(window.getHandle(), (windowHandle, button, action, mode) ->
+				leftButtonPressed  = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS
+		);
 
 		reinit();
 	}
@@ -112,7 +120,7 @@ public class Game {
 		presets.add(new SectionPrototype(new float[] {
 				2,
 				200f, 200f, 40f, 70f, SectionPrototype.NO_ENEMY,
-				528f, 263f, 120f, 80f, SectionPrototype.ARCHER_ENEMY
+				528f, 263f, 120f, 80f, SectionPrototype.SWORD_ENEMY
 		}));
 
 		// PRESET 2
@@ -202,7 +210,6 @@ public class Game {
 
 		// Update player speed and position based on gravity and time scale
 		if (!player.isAttached()) {
-			firstAttach = false;
 			player.adjustSpeedY(-GRAVITY_ACCEL *timeScale*interval);
 			player.adjustPosX(player.getSpeedX()*timeScale*interval);
 			player.adjustPosY(player.getSpeedY()*timeScale*interval);
@@ -224,14 +231,14 @@ public class Game {
 	}
 
 	private void processInput() {
-		if (!player.isAlive() && spacePressed) reinit();
-
 		if (player.canJump()) {
 			if (leftButtonPressed) timeScale = SLOWED_TIME_SCALE;
 			else timeScale = NORMAL_TIME_SCALE;
 
 			// Mouse released handle
 			if (!leftButtonPressed && lastUpdateLeftButtonState) {
+				firstAttach = false;
+
 				player.jump();
 
 				float distanceX = mouseX - player.getPosX();
@@ -244,6 +251,8 @@ public class Game {
 
 		// Space press handle
 		if (spacePressed && !lastUpdateSpaceState) {
+			firstAttach = false;
+
 			double theta = Math.atan2(mouseY-player.getPosY()+screenPos, mouseX-player.getPosX());
 
 			projectiles.add(new Projectile(
@@ -254,6 +263,8 @@ public class Game {
 					true
 			));
 		}
+
+		if (!player.isAlive() && spacePressed) reinit();
 	}
 
 	private void updateProjectiles(float interval) {
@@ -299,8 +310,10 @@ public class Game {
 						}
 					}
 
-					if (Math.hypot(player.getPosX() - enemy.getPosX(),
-							player.getPosY() - enemy.getPosY()) < 50) enemy.engage(player);
+					if (Math.hypot(player.getPosX() - enemy.getPosX(), player.getPosY() - enemy.getPosY()) < 50) {
+						swordSound.play();
+						enemy.engage(player);
+					}
 					if (!enemy.isAlive()) wall.nullifyEnemy();
 				}
 

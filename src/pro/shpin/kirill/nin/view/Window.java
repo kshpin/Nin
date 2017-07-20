@@ -41,7 +41,7 @@ public class Window {
 		deathScreenTex = GLUtil.loadTexture("/deathScreenBlue.png");
 		playerTex = GLUtil.loadTexture("/ninjaPlayer.png");
 		enemyTex = GLUtil.loadTexture("/ninjaEnemy.png");
-		wallTex = GLUtil.loadTexture("/brickWallTileBlack.jpg");
+		wallTex = GLUtil.loadTexture("/wallTextures/brickWallTileBlack.jpg");
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -75,15 +75,33 @@ public class Window {
 	}
 
 	private void drawSideWalls() {
-		GLUtil.fillRectCenter(0, height/2, 100, height, 0, 0, 0, 0);
-		GLUtil.fillRectCenter(width, height/2, 100, height, 0, 0, 0, 0);
+		GLUtil.tileTexRectCenter(
+				0,
+				height/2,
+				100,
+				height,
+				0,
+				wallTex,
+				250,
+				150
+		);
+		GLUtil.tileTexRectCenter(
+				width,
+				height/2,
+				100,
+				height,
+				0,
+				wallTex,
+				250,
+				150
+		);
 	}
 
 	private void drawSections(Game game) {
 		List<Section> sections = game.getSections();
 		for (Section section : sections) {
 			for (Wall wall : section.getWalls()) {
-				GLUtil.tileTexRectCenter(
+				GLUtil.tileTexRectCorner(
 						wall.x,
 						wall.y - game.screenPos,
 						wall.width,

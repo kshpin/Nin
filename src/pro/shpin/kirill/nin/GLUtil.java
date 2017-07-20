@@ -60,8 +60,12 @@ public class GLUtil {
 		glPopMatrix();
 	}
 
-	public static void tileTexRectCenter(float x, float y, float w, float h, float rot, int tex, int texWidth, int texHeight) {
+	public static void tileTexRectCorner(float x, float y, float w, float h, float rot, int tex, int texWidth, int texHeight) {
 		texRectCorner(x, y, w, h, rot, tex, w/texWidth, h/texHeight);
+	}
+
+	public static void tileTexRectCenter(float x, float y, float w, float h, float rot, int tex, int texWidth, int texHeight) {
+		texRectCenter(x, y, w, h, rot, tex, w/texWidth, h/texHeight);
 	}
 
 	public static void fillRectCenter(float x, float y, float w, float h, float rot, float red, float green, float blue) {
