@@ -12,6 +12,8 @@ public class Player {
 
 	private boolean alive;
 
+	private int numJumps;
+
 	public Player(float x, float y) {
 		this.posX = x;
 		this.posY = y;
@@ -19,6 +21,7 @@ public class Player {
 		this.speedY = 0;
 		this.attached = true;
 		this.alive = true;
+		this.numJumps = 0;
 	}
 
 	public float getPosX() {
@@ -89,8 +92,13 @@ public class Player {
 		return attached;
 	}
 
-	public void setAttached(boolean attached) {
-		this.attached = attached;
+	public void attach() {
+		attached = true;
+		numJumps = 0;
+	}
+
+	public void disattach() {
+		attached = false;
 	}
 
 	public void adjustCorner(int cornerId) {
@@ -115,5 +123,19 @@ public class Player {
 
 	public boolean isAlive() {
 		return alive;
+	}
+
+	public int getNumJumps() {
+		System.out.println(numJumps);
+		return numJumps;
+	}
+
+	public void jump() {
+		attached = false;
+		numJumps++;
+	}
+
+	public boolean canJump() {
+		return numJumps < 2;
 	}
 }

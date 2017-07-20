@@ -30,7 +30,7 @@ public class SwordEnemy extends Enemy {
 
 		if (hitCounter == 2) isAlive = false;
 		else {
-			player.setAttached(false);
+			player.disattach();
 			double theta = Math.atan2(player.getPosY()-posY, player.getPosX()-posX);
 			player.setSpeedX(Math.cos(theta) * STRENGTH);
 			player.setSpeedY(Math.sin(theta) * STRENGTH);

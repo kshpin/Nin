@@ -226,18 +226,20 @@ public class Game {
 	private void processInput() {
 		if (!player.isAlive() && spacePressed) reinit();
 
-		if (leftButtonPressed) timeScale = SLOWED_TIME_SCALE;
-		else timeScale = NORMAL_TIME_SCALE;
+		if (player.canJump()) {
+			if (leftButtonPressed) timeScale = SLOWED_TIME_SCALE;
+			else timeScale = NORMAL_TIME_SCALE;
 
-		// Mouse released handle
-		if (!leftButtonPressed && lastUpdateLeftButtonState) {
-			float distanceX = mouseX - player.getPosX();
-			float distanceY = mouseY + screenPos - player.getPosY();
+			// Mouse released handle
+			if (!leftButtonPressed && lastUpdateLeftButtonState) {
+				player.jump();
 
-			player.setSpeedX(distanceX/10f);
-			player.setSpeedY(distanceY/10f);
+				float distanceX = mouseX - player.getPosX();
+				float distanceY = mouseY + screenPos - player.getPosY();
 
-			player.setAttached(false);
+				player.setSpeedX(distanceX/10f);
+				player.setSpeedY(distanceY/10f);
+			}
 		}
 
 		// Space press handle
@@ -322,12 +324,12 @@ public class Game {
 
 		if (centerX-ENTITY_WIDTH_HALF < 50) {
 			player.setPosX(50 + ENTITY_WIDTH_HALF);
-			player.setAttached(true);
+			player.attach();
 			return;
 		}
 		if (centerX+ENTITY_WIDTH_HALF > width-50) {
 			player.setPosX(width-50 - ENTITY_WIDTH_HALF);
-			player.setAttached(true);
+			player.attach();
 			return;
 		}
 
@@ -374,7 +376,7 @@ public class Game {
 				player.setPosX(intersection[0]);
 				player.setPosY(intersection[1]);
 				player.adjustCorner(i);
-				player.setAttached(true);
+				player.attach();
 				return;
 			}
 		}

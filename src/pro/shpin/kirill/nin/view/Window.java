@@ -65,7 +65,7 @@ public class Window {
 			drawSideWalls();
 			drawSections(game);
 			drawProjectiles(game);
-			if (game.leftButtonPressed) drawDirection(game);
+			if (game.leftButtonPressed && game.getPlayer().canJump()) drawDirection(game);
 			drawPlayer(game);
 		} else drawDeathScreen();
 
