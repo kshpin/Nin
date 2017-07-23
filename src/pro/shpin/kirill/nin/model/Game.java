@@ -41,7 +41,8 @@ public class Game {
 	private int width;
 	private int height;
 
-	private Sound swordSound;
+	private Sound shootSound;
+	private Sound stabSound;
 
 	public float timeScale = NORMAL_TIME_SCALE;
 
@@ -69,7 +70,8 @@ public class Game {
 		width = window.width;
 		height = window.height;
 
-		swordSound = new Sound("/sounds/knifeStab.wav");
+		shootSound = new Sound("/opt/kirill/workspace/Nin/res/sounds/8bitShoot.wav");
+		stabSound = new Sound("/opt/kirill/workspace/Nin/res/sounds/8bitStab.wav");
 
 		glfwSetCursorPosCallback(window.getHandle(), (windowHandle, posX, posY) -> {
 			mouseX = (int) posX;
@@ -139,7 +141,7 @@ public class Game {
 		// PRESET 4
 		presets.add(new SectionPrototype(new float[] {
 				6,
-				70f, 20f, 100f, 30f, SectionPrototype.NO_ENEMY,
+				70f, 20f, 100f, 30f, SectionPrototype.ARCHER_ENEMY,
 				250f, 75f, 20f, 95f, SectionPrototype.NO_ENEMY,
 				400f, 10f, 80f, 60f, SectionPrototype.NO_ENEMY,
 				400f, 200f, 85f, 100f, SectionPrototype.NO_ENEMY,
@@ -150,14 +152,14 @@ public class Game {
 		// PRESET 5
 		presets.add(new SectionPrototype(new float[] {
 				2,
-				100, 30, 450, 250, SectionPrototype.NO_ENEMY,
+				100, 30, 450, 250, SectionPrototype.ARCHER_ENEMY,
 				650, 10, 20, 70, SectionPrototype.NO_ENEMY
 		}));
 
 		// PRESET 6
 		presets.add(new SectionPrototype(new float[] {
 				3,
-				200, 10, 200, 150, SectionPrototype.NO_ENEMY,
+				200, 10, 200, 150, SectionPrototype.SWORD_ENEMY,
 				480, 170, 30, 150, SectionPrototype.NO_ENEMY,
 				600, 0, 150, 50, SectionPrototype.NO_ENEMY
 		}));
@@ -165,7 +167,7 @@ public class Game {
 		// PRESET 7
 		presets.add(new SectionPrototype(new float[] {
 				4,
-				50, 300, 150, 30, SectionPrototype.NO_ENEMY,
+				50, 300, 150, 30, SectionPrototype.ARCHER_ENEMY,
 				250, 75, 20, 95, SectionPrototype.NO_ENEMY,
 				400, 10, 80, 60, SectionPrototype.NO_ENEMY,
 				400, 200, 85, 100, SectionPrototype.NO_ENEMY
@@ -182,6 +184,11 @@ public class Game {
 
 	public Player getPlayer() {
 		return player;
+	}
+
+	private void playSound(Sound sound) {
+		sound.stop();
+		sound.play();
 	}
 
 	public void updateInput(Window window) {
@@ -262,6 +269,8 @@ public class Game {
 					Math.sin(theta) * projectileSpeed,
 					true
 			));
+
+			playSound(shootSound);
 		}
 
 		if (!player.isAlive() && spacePressed) reinit();
@@ -311,7 +320,7 @@ public class Game {
 					}
 
 					if (Math.hypot(player.getPosX() - enemy.getPosX(), player.getPosY() - enemy.getPosY()) < 50) {
-						swordSound.play();
+						playSound(stabSound);
 						enemy.engage(player);
 					}
 					if (!enemy.isAlive()) wall.nullifyEnemy();

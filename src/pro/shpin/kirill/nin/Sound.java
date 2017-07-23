@@ -13,10 +13,11 @@ public class Sound {
 		try {
 			File file = new File(fileName);
 			if (file.exists()) {
-				AudioInputStream sound = AudioSystem.getAudioInputStream(file);
+				AudioInputStream inputStream = AudioSystem.getAudioInputStream(file);
+				DataLine.Info info = new DataLine.Info(Clip.class, inputStream.getFormat());
 				// load the sound into memory
-				clip = AudioSystem.getClip();
-				clip.open(sound);
+				clip = (Clip) AudioSystem.getLine(info);
+				clip.open(inputStream);
 			} else throw new RuntimeException("Sound: File not found: " + fileName);
 		} catch (MalformedURLException e) {
 			throw new RuntimeException("Sound: Malformed URL: " + e);
